@@ -1,0 +1,103 @@
+# yaml-language-server: $schema=https://schemas.pennsieve.io/app-manifest/v1.json
+schemaVersion: "1.0"
+application:
+  name: cyCombine Batch Correction
+  description: >-
+    Removes batch effects from arcsinh-transformed flow / mass cytometry FCS files with
+    cyCombine (Pedersen et al., Nat Commun 2022): cells of all samples are clustered with a
+    self-organising map on batch-wise normalised data, then ComBat corrects the marker
+    values within each SOM node, keeping the condition effect as a covariate. ComBat cannot
+    be applied to cells it was not fitted on, so a seeded subsample of each file (default
+    50,000 events) is corrected and written: the output files are subsampled. Also writes
+    cyCombine's own evaluation (EMD reduction, MAD score) and before/after density plots.
+  type: processor
+  tags: [cytometry, flow-cytometry, fcs, batch-correction, cycombine, combat]
+runtime:
+  cpu: 2048
+  # Measured on the full demo data (24 files, 10.2 M events, 25 markers): see README Runtime.
+  memory: 8192
+  computeTypes: [standard]
+  timeoutSeconds: 7200
+parameters:
+  - name: BATCH_COLUMN
+    type: string
+    description: Column of samples.csv that names each sample's batch.
+    defaultValue: batch
+  - name: COVARIATE_COLUMN
+    type: string
+    description: >-
+      Column of samples.csv with the biological condition ComBat must preserve (it is put
+      in ComBat's model, so differences between conditions are not mistaken for batch
+      effects when conditions are spread unevenly over batches). cyCombine ignores it in a
+      SOM node where it is confounded with batch or almost all cells share one value.
+      none = no covariate.
+    defaultValue: condition
+  - name: XDIM
+    type: integer
+    description: SOM grid width; cells are corrected within each SOM node (cyCombine default 8 x 8 = 64 nodes). Lower = coarser correction.
+    defaultValue: 8
+    min: 1
+    max: 50
+  - name: YDIM
+    type: integer
+    description: SOM grid height.
+    defaultValue: 8
+    min: 1
+    max: 50
+  - name: NORM_METHOD
+    type: string
+    description: >-
+      Batch-wise normalisation used only for the SOM clustering (the correction works on
+      the original values): scale (z-score per batch; the authors' choice for batches of
+      one study), rank (for data from different studies / instruments), qnorm (quantile
+      normalisation; not recommended by the authors).
+    defaultValue: scale
+    validValues: [scale, rank, qnorm]
+  - name: MAX_CELLS_PER_SAMPLE
+    type: integer
+    description: >-
+      Events per sample that are corrected and written (seeded subsample, file order
+      kept); 0 = all events. ComBat holds every corrected cell in memory at once, so
+      memory grows with this (see README Runtime).
+    defaultValue: 50000
+    min: 0
+  - name: MARKERS
+    type: string
+    description: >-
+      Comma-separated markers (panel.csv marker or channel names) to cluster and correct.
+      Empty: every panel row of type marker.
+    defaultValue: ""
+  - name: SEED
+    type: integer
+    description: Seed for the subsample and the SOMs.
+    defaultValue: 42
+inputs:
+  - name: fcs
+    description: >-
+      Arcsinh-transformed FCS files, <sample_id>.fcs (from fcs-prep / peacoqc). Found in
+      INPUT_DIR/fcs/ when linked, else anywhere under INPUT_DIR.
+    mediaTypes: [application/vnd.isac.fcs]
+    placement: subfolder
+    required: true
+  - name: metadata
+    description: >-
+      samples.csv (sample_id, batch and the COVARIATE_COLUMN) and panel.csv (channel,
+      marker, type) from fcs-prep. Found in INPUT_DIR/metadata/ when linked, else anywhere
+      under INPUT_DIR by name.
+    mediaTypes: [text/csv]
+    placement: subfolder
+    required: true
+outputs:
+  - name: fcs
+    description: >-
+      fcs/<sample_id>.fcs: the corrected events - a seeded subsample of at most
+      MAX_CELLS_PER_SAMPLE per file - with the input's channels and keywords; marker
+      channels changed, $TOT updated, keyword PENNSIEVE_NORM added (records the
+      subsample). fcs/provenance.json.
+    mediaTypes: [application/vnd.isac.fcs, application/json]
+  - name: qc
+    description: >-
+      Everything under qc/cycombine/ (so it can share a folder with other methods' qc):
+      evaluation.csv (EMD reduction, MAD score), emd.csv, emd_by_marker.csv, mad.csv,
+      som_node_counts.csv, density_NN.png, provenance.json.
+    mediaTypes: [text/csv, image/png, application/json]
