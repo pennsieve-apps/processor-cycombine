@@ -1,0 +1,144 @@
+cff-version: "1.2.0"
+message: If you use this app, please cite it and the works it builds on, listed under references.
+type: software
+title: cyCombine Batch Correction
+abstract: 'Removes batch effects from arcsinh-transformed flow or mass cytometry FCS files with cyCombine:
+  cells are clustered with a self-organising map and ComBat corrects the marker values within each node,
+  keeping the condition as a covariate. Writes corrected, subsampled files with cyCombine''s own evaluation
+  and density plots.'
+authors:
+- name: Pennsieve (University of Pennsylvania)
+repository-code: https://github.com/pennsieve-apps/processor-cycombine
+license: Apache-2.0
+keywords:
+- cytometry
+- flow-cytometry
+- fcs
+- batch-correction
+- cycombine
+- combat
+references:
+- type: article
+  title: cyCombine allows for robust integration of single-cell cytometry datasets within and across technologies
+  authors:
+  - family-names: Pedersen
+    given-names: Christina Bligaard
+  - family-names: Dam
+    given-names: Søren Helweg
+  - family-names: Barnkob
+    given-names: Mike Bogetofte
+  - family-names: Leipold
+    given-names: Michael D.
+  - family-names: Purroy
+    given-names: Noelia
+  - family-names: Rassenti
+    given-names: Laura Z.
+  - family-names: Kipps
+    given-names: Thomas J.
+  - family-names: Nguyen
+    given-names: Jennifer
+  - family-names: Lederer
+    given-names: James Arthur
+  - family-names: Gohil
+    given-names: Satyen Harish
+  - family-names: Wu
+    given-names: Catherine J.
+  - family-names: Olsen
+    given-names: Lars Rønn
+  year: 2022
+  journal: Nature Communications
+  volume: 13
+  issue: '1'
+  start: '1698'
+  doi: 10.1038/s41467-022-29383-5
+- type: article
+  title: Adjusting batch effects in microarray expression data using empirical Bayes methods
+  authors:
+  - family-names: Johnson
+    given-names: W. Evan
+  - family-names: Li
+    given-names: Cheng
+  - family-names: Rabinovic
+    given-names: Ariel
+  year: 2007
+  journal: Biostatistics
+  volume: 8
+  issue: '1'
+  start: '118'
+  end: '127'
+  doi: 10.1093/biostatistics/kxj037
+- type: article
+  title: The sva package for removing batch effects and other unwanted variation in high-throughput experiments
+  authors:
+  - family-names: Leek
+    given-names: Jeffrey T.
+  - family-names: Johnson
+    given-names: W. Evan
+  - family-names: Parker
+    given-names: Hilary S.
+  - family-names: Jaffe
+    given-names: Andrew E.
+  - family-names: Storey
+    given-names: John D.
+  year: 2012
+  journal: Bioinformatics
+  volume: 28
+  issue: '6'
+  start: '882'
+  end: '883'
+  doi: 10.1093/bioinformatics/bts034
+- type: article
+  title: Flexible Self-Organizing Maps in kohonen 3.0
+  authors:
+  - family-names: Wehrens
+    given-names: Ron
+  - family-names: Kruisselbrink
+    given-names: Johannes
+  year: 2018
+  journal: Journal of Statistical Software
+  volume: 87
+  issue: '7'
+  doi: 10.18637/jss.v087.i07
+- type: article
+  title: 'flowCore: a Bioconductor package for high throughput flow cytometry'
+  authors:
+  - family-names: Hahne
+    given-names: Florian
+  - family-names: LeMeur
+    given-names: Nolwenn
+  - family-names: Brinkman
+    given-names: Ryan R
+  - family-names: Ellis
+    given-names: Byron
+  - family-names: Haaland
+    given-names: Perry
+  - family-names: Sarkar
+    given-names: Deepayan
+  - family-names: Spidlen
+    given-names: Josef
+  - family-names: Strain
+    given-names: Errol
+  - family-names: Gentleman
+    given-names: Robert
+  year: 2009
+  journal: BMC Bioinformatics
+  volume: 10
+  issue: '1'
+  start: '106'
+  doi: 10.1186/1471-2105-10-106
+- type: data
+  title: 'CytoBatchFlagR: Spectral flow cytometry dataset'
+  authors:
+  - family-names: Koenig
+    given-names: Zachary
+  - family-names: Andorf
+    given-names: Sandra
+  - family-names: Tilburgs
+    given-names: Tamara
+  - family-names: Eswar
+    given-names: Shruti
+  year: 2025
+  publisher:
+    name: Zenodo
+  doi: 10.5281/zenodo.15388817
+  license: CC-BY-4.0
