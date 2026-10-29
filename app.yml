@@ -54,13 +54,20 @@ parameters:
     defaultValue: scale
     validValues: [scale, rank, qnorm]
   - name: MAX_CELLS_PER_SAMPLE
-    type: integer
+    type: string
     description: >-
       Events per sample that are corrected and written (seeded subsample, file order
-      kept); 0 = all events. ComBat holds every corrected cell in memory at once, so
-      memory grows with this (see README Runtime).
-    defaultValue: 50000
-    min: 0
+      kept); 0 = all events. ComBat holds every corrected value in memory at once, so memory
+      grows with cells x markers: auto (default) takes as many as keep cells x markers within
+      MAX_VALUES, at most 50000 per sample (see README Runtime).
+    defaultValue: auto
+  - name: MAX_VALUES
+    type: integer
+    description: >-
+      Memory budget for MAX_CELLS_PER_SAMPLE=auto, in corrected values (cells x markers).
+      30 million peaked at 5.3 GB; raise it together with the step's memory.
+    defaultValue: 30000000
+    min: 100000
   - name: MARKERS
     type: string
     description: >-

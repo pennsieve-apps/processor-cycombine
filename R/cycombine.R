@@ -36,7 +36,10 @@ cycombine_params <- function() {
     XDIM = env_int("XDIM", 8, min = 1, max = 50),
     YDIM = env_int("YDIM", 8, min = 1, max = 50),
     NORM_METHOD = env_choice("NORM_METHOD", "scale", c("scale", "rank", "qnorm")),
-    MAX_CELLS_PER_SAMPLE = env_int("MAX_CELLS_PER_SAMPLE", 50000, min = 0),
+    # "auto" (default): as many as fit the memory budget, at most 50000 per sample; see run().
+    MAX_CELLS_PER_SAMPLE = if (tolower(env_str("MAX_CELLS_PER_SAMPLE", "auto")) == "auto") NA_integer_
+                           else env_int("MAX_CELLS_PER_SAMPLE", 50000, min = 0),
+    MAX_VALUES = env_int("MAX_VALUES", 30000000, min = 1e5),
     MARKERS = env_list("MARKERS"),
     SEED = env_int("SEED", 42)
   )
@@ -130,6 +133,15 @@ run_cycombine <- function(input_dir, output_dir, app_dir, p = cycombine_params()
   m <- m[!bad, , drop = FALSE]
   m <- m[order(m$batch, m$sample_id), , drop = FALSE]
   m$idx <- seq_len(nrow(m))
+
+  # ComBat holds every corrected value in memory, so memory grows with cells x markers: the
+  # spectral demo's 50000 cells x 24 samples x 25 markers (30 M values) peaked at 5.3 GB. "auto"
+  # keeps cells x markers within MAX_VALUES (12400 per sample for 48 CyTOF samples x 42 markers).
+  if (is.na(p$MAX_CELLS_PER_SAMPLE)) {
+    p$MAX_CELLS_PER_SAMPLE <- as.integer(min(50000, floor(p$MAX_VALUES / (length(channels) * max(1, nrow(m))))))
+    log_line(sprintf("MAX_CELLS_PER_SAMPLE=auto: %d per sample (%d samples x %d markers within MAX_VALUES=%d)",
+                     p$MAX_CELLS_PER_SAMPLE, nrow(m), length(channels), p$MAX_VALUES))
+  }
 
   # ---- read: seeded subsample of each sample, marker columns only ----
   t_read <- Sys.time()
@@ -240,10 +252,14 @@ run_cycombine <- function(input_dir, output_dir, app_dir, p = cycombine_params()
   # Evaluate on at most EVAL_CELLS_PER_SAMPLE cells per sample (seeded): the EMD/MAD
   # functions copy the whole table per cluster and batch, which would double the memory of
   # the correction itself.
+  # The cap follows the memory budget too: 40% of MAX_VALUES (20000 per sample on the spectral
+  # demo, ~6000 for 48 CyTOF samples x 42 markers, whose evaluation was killed at 6 GB at 20000).
+  eval_cap <- as.integer(min(EVAL_CELLS_PER_SAMPLE,
+                             floor(0.4 * p$MAX_VALUES / (length(markers) * max(1, nrow(m))))))
   eval_rows <- unlist(lapply(split(seq_len(nrow(uncorrected)), uncorrected$sample), function(ix) {
-    if (length(ix) <= EVAL_CELLS_PER_SAMPLE) return(ix)
+    if (length(ix) <= eval_cap) return(ix)
     set.seed(p$SEED)
-    sort(sample(ix, EVAL_CELLS_PER_SAMPLE))
+    sort(sample(ix, eval_cap))
   }), use.names = FALSE)
   eval_rows <- sort(eval_rows)
   keep_cols <- c("id", "sample", "batch", "condition", markers)
@@ -252,7 +268,7 @@ run_cycombine <- function(input_dir, output_dir, app_dir, p = cycombine_params()
   corrected <- tibble::as_tibble(corrected)
   gc(verbose = FALSE)
   log_line(sprintf("evaluation on %d cells (at most %d per sample); memory %s", nrow(corrected),
-                   EVAL_CELLS_PER_SAMPLE, mem_status()))
+                   eval_cap, mem_status()))
   eval_labels <- suppressMessages(cyCombine::create_som(corrected, markers = markers, seed = p$SEED,
                                                         xdim = p$XDIM, ydim = p$YDIM, rlen = 10))
   uncorrected$label <- eval_labels

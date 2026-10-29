@@ -79,7 +79,8 @@ corrected cells per sample (seeded).
 | `COVARIATE_COLUMN` | string | `condition` | Column ComBat keeps in its model (see above); `none` = no covariate. |
 | `XDIM`, `YDIM` | integer | `8`, `8` | SOM grid (cyCombine default); the correction is done per node. Smaller = coarser correction, for very different batches. |
 | `NORM_METHOD` | `scale` \| `rank` \| `qnorm` | `scale` | Batch-wise normalisation used only for clustering. The authors recommend `scale` within one study, `rank` across studies / instruments, and advise against `qnorm`. |
-| `MAX_CELLS_PER_SAMPLE` | integer | `50000` | Events per sample corrected and written (seeded); 0 = all. |
+| `MAX_CELLS_PER_SAMPLE` | string | `auto` | Events per sample corrected and written (seeded); 0 = all. `auto` keeps cells × markers within `MAX_VALUES`, at most 50000 per sample. |
+| `MAX_VALUES` | integer | `30000000` | Memory budget of `auto`, in corrected values (cells × markers); the evaluation uses 40% of it. 30 M peaked at 5.3 GB. |
 | `MARKERS` | string | (all `type=marker`) | Comma-separated markers or channels to cluster and correct. |
 | `SEED` | integer | `42` | Seed for the subsample and both SOMs. |
 
@@ -108,6 +109,13 @@ some of what is removed in them is donor biology. Full outputs:
 `workflow-immune-cytometry/data/work/cycombine/`.
 
 ## Runtime
+
+Memory grows with cells × markers, not cells alone, so the default cap is a budget:
+`MAX_CELLS_PER_SAMPLE=auto` takes `min(50000, MAX_VALUES / (markers × samples))` per sample,
+and the evaluation `min(20000, 0.4 × MAX_VALUES / (markers × samples))`. On the spectral demo
+(24 samples × 25 markers) that is 50000 and 20000, as before. On the CyTOF demo (48 samples ×
+42 markers, Kowli et al. 2025, 20k events per file) it is 14880 and 5952: 235 s, R-reported peak
+3.0 GiB; with 50000 per sample the evaluation alone was killed at 6 GB.
 
 `computeTypes: [standard]`, 2 vCPU / 8 GiB, 2 h timeout.
 
