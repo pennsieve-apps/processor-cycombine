@@ -1,5 +1,6 @@
 cff-version: "1.2.0"
-message: If you use this app, please cite it and the works it builds on, listed under references.
+message: >-
+  If you use this app, please cite the work it implements (preferred-citation), this release, and Pennsieve (RRID:SCR_021677); the other works it builds on are listed under references.
 type: software
 title: cyCombine Batch Correction
 abstract: 'Removes batch effects from arcsinh-transformed flow or mass cytometry FCS files with cyCombine:
@@ -17,6 +18,41 @@ keywords:
 - batch-correction
 - cycombine
 - combat
+# The work this app implements; the release report's "How to cite" puts it first.
+preferred-citation:
+  type: article
+  title: cyCombine allows for robust integration of single-cell cytometry datasets within and across technologies
+  authors:
+  - family-names: Pedersen
+    given-names: Christina Bligaard
+  - family-names: Dam
+    given-names: Søren Helweg
+  - family-names: Barnkob
+    given-names: Mike Bogetofte
+  - family-names: Leipold
+    given-names: Michael D.
+  - family-names: Purroy
+    given-names: Noelia
+  - family-names: Rassenti
+    given-names: Laura Z.
+  - family-names: Kipps
+    given-names: Thomas J.
+  - family-names: Nguyen
+    given-names: Jennifer
+  - family-names: Lederer
+    given-names: James Arthur
+  - family-names: Gohil
+    given-names: Satyen Harish
+  - family-names: Wu
+    given-names: Catherine J.
+  - family-names: Olsen
+    given-names: Lars Rønn
+  year: 2022
+  journal: Nature Communications
+  volume: 13
+  issue: '1'
+  start: '1698'
+  doi: 10.1038/s41467-022-29383-5
 references:
 - type: article
   title: cyCombine allows for robust integration of single-cell cytometry datasets within and across technologies
